@@ -6,6 +6,10 @@
 
 'use strict';
 
+// ── Reemplaza con la URL del webhook de n8n después de importar el workflow ──
+const N8N_WEBHOOK_URL = 'https://stipulate-glade-exclaim.ngrok-free.dev/webhook/smartcity-fix';
+//                                                                         ^^^^^^^ sin "-test"';
+
 /* ============================================================
    1. LOADER
    ============================================================ */
@@ -24,7 +28,6 @@ window.addEventListener('load', () => {
   const menu     = document.getElementById('navMenu');
   const navLinks = document.querySelectorAll('.nav-link');
 
-  // Scroll → clase scrolled
   const onScroll = () => {
     if (!navbar) return;
     navbar.classList.toggle('scrolled', window.scrollY > 20);
@@ -32,14 +35,12 @@ window.addEventListener('load', () => {
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  // Toggle menú móvil
   toggle?.addEventListener('click', () => {
     const open = menu?.classList.toggle('open');
     toggle.classList.toggle('open', open);
     toggle.setAttribute('aria-expanded', String(open));
   });
 
-  // Cerrar menú al clicar enlace
   navLinks.forEach(link => {
     link.addEventListener('click', () => {
       menu?.classList.remove('open');
@@ -48,7 +49,6 @@ window.addEventListener('load', () => {
     });
   });
 
-  // Active link según sección visible
   const sections = document.querySelectorAll('section[id]');
   const setActive = () => {
     let current = '';
@@ -65,7 +65,7 @@ window.addEventListener('load', () => {
 })();
 
 /* ============================================================
-   3. FADE-UP — IntersectionObserver para animaciones scroll
+   3. FADE-UP
    ============================================================ */
 (function initFadeUp() {
   const items = document.querySelectorAll('.fade-up');
@@ -87,16 +87,12 @@ window.addEventListener('load', () => {
 })();
 
 /* ============================================================
-   4. COUNTERS — animación de números al entrar en viewport
+   4. COUNTERS
    ============================================================ */
 (function initCounters() {
   const counters = document.querySelectorAll('[data-counter]');
   if (!counters.length) return;
 
-  /**
-   * @param {HTMLElement} el
-   * @param {number} target
-   */
   const animateCounter = (el, target) => {
     const duration = 1800;
     const start    = performance.now();
@@ -104,7 +100,6 @@ window.addEventListener('load', () => {
     const tick = (now) => {
       const elapsed  = now - start;
       const progress = Math.min(elapsed / duration, 1);
-      // Ease out cubic
       const eased    = 1 - Math.pow(1 - progress, 3);
       el.textContent = Math.floor(eased * target).toLocaleString('es-CO');
       if (progress < 1) requestAnimationFrame(tick);
@@ -131,7 +126,7 @@ window.addEventListener('load', () => {
 })();
 
 /* ============================================================
-   5. PROGRESS BARS — animar al entrar en viewport
+   5. PROGRESS BARS
    ============================================================ */
 (function initProgressBars() {
   const bars = document.querySelectorAll('.progress-bar__fill[data-pct]');
@@ -155,7 +150,7 @@ window.addEventListener('load', () => {
 })();
 
 /* ============================================================
-   6. CHARTS — bar chart + line chart con SVG dinámico
+   6. CHARTS
    ============================================================ */
 (function initCharts() {
   // ── Bar Chart
@@ -186,7 +181,6 @@ window.addEventListener('load', () => {
       `;
       barChart.appendChild(div);
 
-      // Trigger animation when visible
       const bar = div.querySelector('.bar-item__bar');
       const obs = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) {
@@ -198,7 +192,7 @@ window.addEventListener('load', () => {
     });
   }
 
-  // ── Indicator bars animation
+  // ── Indicator bars
   const indicatorBars = document.querySelectorAll('.indicator__bar div');
   const indObs = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -263,7 +257,6 @@ window.addEventListener('load', () => {
 
     lineChart.appendChild(svg);
 
-    // Animate line draw on visible
     const lineObs = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting) {
         const path = svg.querySelector('.line-path');
@@ -282,37 +275,108 @@ window.addEventListener('load', () => {
 })();
 
 /* ============================================================
-   7. GEOLOCALIZACIÓN
+   7. GEOLOCALIZACIÓN + MAPA LEAFLET
    ============================================================ */
-(function initGeo() {
-  const btn    = document.getElementById('geoBtn');
-  const latEl  = document.getElementById('lat');
-  const lngEl  = document.getElementById('lng');
-  const status = document.getElementById('geoStatus');
-  if (!btn) return;
+(function initGeoMap() {
+  const btn       = document.getElementById('geoBtn');
+  const latEl     = document.getElementById('lat');
+  const lngEl     = document.getElementById('lng');
+  const statusEl  = document.getElementById('geoStatus');
+  const mapEl     = document.getElementById('incidentMap');
+  const addressEl = document.getElementById('geoAddress');
+  if (!btn || !mapEl) return;
+
+  const DEFAULT_LAT  = 4.6097;
+  const DEFAULT_LNG  = -74.0817;
+  const DEFAULT_ZOOM = 13;
+
+  const map = L.map('incidentMap', {
+    center: [DEFAULT_LAT, DEFAULT_LNG],
+    zoom: DEFAULT_ZOOM,
+    zoomControl: true,
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+  }).addTo(map);
+
+  const markerIcon = L.divIcon({
+    className: 'leaflet-custom-marker',
+    html: '<div class="custom-marker-pin"><i class="ri-map-pin-2-fill"></i></div>',
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+    popupAnchor: [0, -38],
+  });
+
+  let marker = null;
+
+  function placeMarker(lat, lng) {
+    if (latEl) latEl.value = lat.toFixed(6);
+    if (lngEl) lngEl.value = lng.toFixed(6);
+    setFieldValid('lat');
+    setFieldValid('lng');
+    clearError('err-coords');
+
+    if (marker) {
+      marker.setLatLng([lat, lng]);
+    } else {
+      marker = L.marker([lat, lng], { icon: markerIcon, draggable: true }).addTo(map);
+      marker.on('dragend', (e) => {
+        const { lat: newLat, lng: newLng } = e.target.getLatLng();
+        placeMarker(newLat, newLng);
+        reverseGeocode(newLat, newLng);
+      });
+    }
+
+    marker.bindPopup(
+      `<strong>Incidente reportado</strong><br>Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`
+    ).openPopup();
+  }
+
+  async function reverseGeocode(lat, lng) {
+    if (!addressEl) return;
+    addressEl.innerHTML = '<span class="geo-addr-loading"><i class="ri-loader-4-line"></i> Obteniendo dirección…</span>';
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=es`;
+      const res  = await fetch(url, { headers: { 'Accept-Language': 'es' } });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const addr = data.display_name || 'Dirección no disponible';
+      addressEl.innerHTML = `
+        <div class="geo-addr-result">
+          <i class="ri-map-pin-user-line"></i>
+          <span>${addr}</span>
+        </div>`;
+    } catch {
+      addressEl.innerHTML = `<span class="geo-addr-error"><i class="ri-error-warning-line"></i> No se pudo obtener la dirección.</span>`;
+    }
+  }
+
+  map.on('click', (e) => {
+    placeMarker(e.latlng.lat, e.latlng.lng);
+    reverseGeocode(e.latlng.lat, e.latlng.lng);
+  });
 
   btn.addEventListener('click', () => {
     if (!navigator.geolocation) {
-      showStatus('Tu navegador no soporta geolocalización.', 'error');
+      showGeoStatus('Tu navegador no soporta geolocalización.', 'error');
       return;
     }
 
     btn.classList.add('loading');
     btn.disabled = true;
-    showStatus('Obteniendo ubicación…', 'info');
+    showGeoStatus('Obteniendo ubicación…', 'info');
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude, accuracy } = pos.coords;
-        if (latEl) latEl.value = latitude.toFixed(6);
-        if (lngEl) lngEl.value = longitude.toFixed(6);
-        showStatus(`✓ Ubicación obtenida (precisión ±${Math.round(accuracy)}m)`, 'success');
+        placeMarker(latitude, longitude);
+        map.flyTo([latitude, longitude], 16, { animate: true, duration: 1.2 });
+        reverseGeocode(latitude, longitude);
+        showGeoStatus(`✓ Ubicación obtenida (precisión ±${Math.round(accuracy)}m)`, 'success');
         btn.classList.remove('loading');
         btn.disabled = false;
-        // Clear coord errors
-        setFieldValid('lat');
-        setFieldValid('lng');
-        clearError('err-coords');
       },
       (err) => {
         const msgs = {
@@ -320,7 +384,7 @@ window.addEventListener('load', () => {
           2: 'Ubicación no disponible. Intenta de nuevo.',
           3: 'Tiempo de espera agotado. Intenta de nuevo.',
         };
-        showStatus(msgs[err.code] || 'Error al obtener ubicación.', 'error');
+        showGeoStatus(msgs[err.code] || 'Error al obtener ubicación.', 'error');
         btn.classList.remove('loading');
         btn.disabled = false;
       },
@@ -328,14 +392,10 @@ window.addEventListener('load', () => {
     );
   });
 
-  /**
-   * @param {string} msg
-   * @param {'info'|'success'|'error'} type
-   */
-  function showStatus(msg, type) {
-    if (!status) return;
-    status.textContent = msg;
-    status.style.color = type === 'success'
+  function showGeoStatus(msg, type) {
+    if (!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.style.color = type === 'success'
       ? 'var(--color-success)'
       : type === 'error'
       ? 'var(--color-danger)'
@@ -355,7 +415,7 @@ window.addEventListener('load', () => {
   const removeBtn  = document.getElementById('removePhoto');
   if (!zone || !input) return;
 
-  const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+  const MAX_SIZE = 10 * 1024 * 1024;
 
   const showPreview = (file) => {
     if (!file.type.startsWith('image/')) {
@@ -382,7 +442,6 @@ window.addEventListener('load', () => {
     if (input.files?.[0]) showPreview(input.files[0]);
   });
 
-  // Drag & Drop
   zone.addEventListener('dragover', (e) => {
     e.preventDefault();
     zone.classList.add('drag-over');
@@ -395,7 +454,6 @@ window.addEventListener('load', () => {
     zone.classList.remove('drag-over');
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      // Sync with input for FormData
       const dt = new DataTransfer();
       dt.items.add(file);
       input.files = dt.files;
@@ -403,7 +461,6 @@ window.addEventListener('load', () => {
     }
   });
 
-  // Keyboard open
   zone.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') input.click();
   });
@@ -433,39 +490,29 @@ window.addEventListener('load', () => {
 /* ============================================================
    10. VALIDACIONES
    ============================================================ */
-
-/** @param {string} id  */
 function setFieldInvalid(id) {
   const el = document.getElementById(id);
   el?.classList.add('invalid');
 }
 
-/** @param {string} id  */
 function setFieldValid(id) {
   const el = document.getElementById(id);
   el?.classList.remove('invalid');
 }
 
-/** @param {string} errId @param {string} msg */
 function setError(errId, msg) {
   const el = document.getElementById(errId);
   if (el) el.textContent = msg;
 }
 
-/** @param {string} errId */
 function clearError(errId) {
   const el = document.getElementById(errId);
   if (el) el.textContent = '';
 }
 
-/**
- * Valida el formulario completo.
- * @returns {boolean}
- */
 function validateForm() {
   let valid = true;
 
-  /** @param {string} fieldId @param {string} errId @param {string} msg */
   const required = (fieldId, errId, msg) => {
     const el = document.getElementById(fieldId);
     if (!el?.value.trim()) {
@@ -478,12 +525,10 @@ function validateForm() {
     }
   };
 
-  // Nombre
   required('fullName', 'err-fullName', 'El nombre es obligatorio.');
-  // Documento
-  required('docId', 'err-docId', 'El documento es obligatorio.');
-  // Teléfono
-  const phone = document.getElementById('phone');
+  required('docId',    'err-docId',    'El documento es obligatorio.');
+
+  const phone    = document.getElementById('phone');
   const phoneVal = phone?.value.trim() || '';
   if (!phoneVal) {
     setFieldInvalid('phone');
@@ -497,8 +542,8 @@ function validateForm() {
     setFieldValid('phone');
     clearError('err-phone');
   }
-  // Email
-  const email = document.getElementById('email');
+
+  const email    = document.getElementById('email');
   const emailVal = email?.value.trim() || '';
   if (!emailVal) {
     setFieldInvalid('email');
@@ -512,7 +557,7 @@ function validateForm() {
     setFieldValid('email');
     clearError('err-email');
   }
-  // Tipo de incidente
+
   const incidentChecked = document.querySelector('input[name="incidentType"]:checked');
   if (!incidentChecked) {
     setError('err-incidentType', 'Selecciona el tipo de incidente.');
@@ -520,7 +565,7 @@ function validateForm() {
   } else {
     clearError('err-incidentType');
   }
-  // Coordenadas
+
   const lat = document.getElementById('lat');
   const lng = document.getElementById('lng');
   if (!lat?.value || !lng?.value) {
@@ -542,7 +587,7 @@ function validateForm() {
       clearError('err-coords');
     }
   }
-  // Foto
+
   const photoInput = document.getElementById('photoInput');
   if (!photoInput?.files?.length) {
     const zone = document.getElementById('uploadZone');
@@ -554,7 +599,7 @@ function validateForm() {
     zone?.classList.remove('invalid');
     clearError('err-photo');
   }
-  // Descripción
+
   const desc = document.getElementById('description');
   if (!desc?.value.trim()) {
     setFieldInvalid('description');
@@ -585,7 +630,6 @@ function validateForm() {
 
     if (!validateForm()) {
       showToast('Por favor, corrige los errores del formulario.', 'error');
-      // Scroll al primer error
       const firstInvalid = form.querySelector('.invalid, .field-error:not(:empty)');
       firstInvalid?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
@@ -594,7 +638,6 @@ function validateForm() {
     submitBtn.classList.add('loading');
     submitBtn.disabled = true;
 
-    // Simular envío al backend
     await simulateSubmit();
 
     submitBtn.classList.remove('loading');
@@ -602,13 +645,63 @@ function validateForm() {
   });
 
   async function simulateSubmit() {
-    // Aquí se conectará con el backend n8n
-    await sleep(2000);
+  const photoFile = document.getElementById('photoInput')?.files?.[0];
+  let photoBase64 = '';
+  if (photoFile) {
+    photoBase64 = await fileToBase64(photoFile);
+  }
 
-    const ticketId = generateTicketId();
-    showToast(`✓ Reporte enviado. Ticket: ${ticketId}`, 'success', 6000);
+  // ── Genera ticketId local por si n8n falla ──
+  const localTicketId = generateTicketId();
 
-    // Rellenar automáticamente el campo de ticket
+  const payload = {
+    ticketId:       localTicketId,
+    fullName:       document.getElementById('fullName')?.value  || '',
+    docId:          document.getElementById('docId')?.value     || '',
+    phone:          document.getElementById('phone')?.value     || '',
+    email:          document.getElementById('email')?.value     || '',
+    incidentType:   document.querySelector('input[name="incidentType"]:checked')?.value || '',
+    lat:            document.getElementById('lat')?.value       || '',
+    lng:            document.getElementById('lng')?.value       || '',
+    direccion:      document.getElementById('geoAddress')?.querySelector('span')?.textContent?.trim() || '',
+    description:    document.getElementById('description')?.value || '',
+    // ── Si no hay foto manda string vacío, nunca null ──
+    photoBase64:    photoBase64 || '',
+    fechaEnvio:     new Date().toISOString(),
+    telegramChatId: '',
+  };
+
+  let ticketId = localTicketId;
+
+  try {
+    const res = await fetch(N8N_WEBHOOK_URL, {
+      method:  'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+      if (data.ticketId) ticketId = data.ticketId;
+      showToast(`✓ Reporte enviado. Ticket: ${ticketId}`, 'success', 7000);
+    } else if (res.status === 400) {
+      // n8n rechazó por spam o validación
+      const data = await res.json().catch(() => ({}));
+      const msg = data.message || 'Reporte rechazado por el sistema.';
+      showToast(`⚠️ ${msg}`, 'error', 7000);
+      return; // no resetear el form, deja que el usuario corrija
+    } else {
+      throw new Error(`HTTP ${res.status}`);
+    }
+  } catch (err) {
+    console.warn('n8n no disponible, usando modo demo:', err.message);
+    showToast(`✓ Reporte registrado (demo). Ticket: ${ticketId}`, 'success', 6000);
+  }
+
+
     const ticketInput = document.getElementById('ticketId');
     if (ticketInput) ticketInput.value = ticketId;
 
@@ -616,8 +709,19 @@ function validateForm() {
     document.getElementById('charCount').textContent = '0';
     document.getElementById('previewImg').src = '';
     document.getElementById('uploadPreview').style.display = 'none';
-    document.getElementById('uploadPrompt').style.display = '';
+    document.getElementById('uploadPrompt').style.display  = '';
     document.getElementById('geoStatus').textContent = '';
+    const addrEl = document.getElementById('geoAddress');
+    if (addrEl) addrEl.innerHTML = '';
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 })();
 
@@ -625,67 +729,88 @@ function validateForm() {
    12. TICKET STATUS
    ============================================================ */
 (function initTicketCheck() {
-  const checkBtn  = document.getElementById('checkTicket');
+  const checkBtn    = document.getElementById('checkTicket');
   const ticketInput = document.getElementById('ticketId');
-  const resultDiv = document.getElementById('ticketResult');
-  const demoBtn   = document.querySelector('.demo-ticket');
+  const resultDiv   = document.getElementById('ticketResult');
+  const demoBtn     = document.querySelector('.demo-ticket');
   if (!checkBtn || !ticketInput || !resultDiv) return;
 
-  /** Mock data */
-  const MOCK_TICKETS = {
-    'SCF-2024-001234': { type: 'Bache', address: 'Av. Principal #34', status: 3 },
-    'SCF-2024-005678': { type: 'Luminaria', address: 'Calle 7 #12', status: 5 },
-    'SCF-2024-009012': { type: 'Semáforo', address: 'Carrera 5 con Calle 10', status: 1 },
-  };
-
   const STEPS = [
-    { label: 'Recibido',       icon: 'ri-inbox-archive-line' },
-    { label: 'En análisis IA', icon: 'ri-robot-2-line' },
-    { label: 'Asignado',       icon: 'ri-user-received-line' },
-    { label: 'En proceso',     icon: 'ri-tools-line' },
-    { label: 'Solucionado',    icon: 'ri-check-double-line' },
+    { label: 'Recibido'       },
+    { label: 'En análisis IA' },
+    { label: 'Asignado'       },
+    { label: 'En proceso'     },
+    { label: 'Solucionado'    },
   ];
 
   const lookup = async (id) => {
-    resultDiv.innerHTML = `<p style="color:rgba(255,255,255,.4);font-size:.85rem">Consultando…</p>`;
-    await sleep(700);
+    resultDiv.innerHTML = `<p style="color:rgba(255,255,255,.4);font-size:.85rem">
+      <i class="ri-loader-4-line" style="animation:spin 1s linear infinite;"></i>
+      Consultando base de datos…
+    </p>`;
 
-    const ticket = MOCK_TICKETS[id.toUpperCase()];
-    if (!ticket) {
+    try {
+      const url = `https://stipulate-glade-exclaim.ngrok-free.dev/webhook/get-ticket?id=${encodeURIComponent(id)}`;
+
+      // ── fetch único con ngrok-skip-browser-warning ──
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const ticket = await res.json();
+
+      if (!ticket || !ticket.ticketId) {
+        throw new Error('Ticket no encontrado');
+      }
+
+      const mapaEstados = {
+        'Pendiente':   1,
+        'Análisis IA': 2,
+        'Asignado':    3,
+        'En proceso':  4,
+        'Solucionado': 5,
+        'Duplicado':   5,
+      };
+      const statusNum = mapaEstados[ticket.estado] || 1;
+
+      const stepsHTML = STEPS.map((step, i) => {
+        const idx      = i + 1;
+        const isDone   = idx < statusNum;
+        const isActive = idx === statusNum;
+        const cls      = isDone ? 'done' : isActive ? 'active' : '';
+        const dot      = isDone
+          ? '<i class="ri-check-line"></i>'
+          : isActive
+          ? '<i class="ri-refresh-line"></i>'
+          : `${idx}`;
+        return `
+          <div class="progress-step ${cls}">
+            <div class="step-dot">${dot}</div>
+            <span>${step.label}</span>
+          </div>`;
+      }).join('');
+
+      resultDiv.innerHTML = `
+        <div class="ticket-progress">
+          <div class="ticket-info">
+            <h4>${ticket.ticketId}</h4>
+            <p>${ticket.categoria.toUpperCase()} · Severidad: ${ticket.prioridad}</p>
+            <p style="font-size:.75rem;color:rgba(255,255,255,.4)">📅 ${ticket.fecha}</p>
+          </div>
+          ${stepsHTML}
+        </div>`;
+
+    } catch (err) {
       resultDiv.innerHTML = `
         <p style="color:var(--color-danger);font-size:.85rem">
-          <i class="ri-error-warning-line"></i> Ticket no encontrado.
+          <i class="ri-error-warning-line"></i> Ticket no encontrado o inválido.
         </p>`;
-      return;
     }
-
-    const stepsHTML = STEPS.map((step, i) => {
-      const idx    = i + 1;
-      const isDone = idx < ticket.status;
-      const isActive = idx === ticket.status;
-      const cls    = isDone ? 'done' : isActive ? 'active' : '';
-      const dotContent = isDone
-        ? '<i class="ri-check-line"></i>'
-        : isActive
-        ? '<i class="ri-refresh-line"></i>'
-        : `${idx}`;
-      return `
-        <div class="progress-step ${cls}">
-          <div class="step-dot">${dotContent}</div>
-          <span>${step.label}</span>
-        </div>
-      `;
-    }).join('');
-
-    resultDiv.innerHTML = `
-      <div class="ticket-progress">
-        <div class="ticket-info">
-          <h4>${id.toUpperCase()}</h4>
-          <p>${ticket.type} · ${ticket.address}</p>
-        </div>
-        ${stepsHTML}
-      </div>
-    `;
   };
 
   checkBtn.addEventListener('click', () => {
@@ -710,17 +835,12 @@ function validateForm() {
 /* ============================================================
    13. TOAST
    ============================================================ */
-/**
- * @param {string} msg
- * @param {'success'|'error'|'info'} type
- * @param {number} [duration=4000]
- */
 function showToast(msg, type = 'info', duration = 4000) {
   const toast = document.getElementById('toast');
   if (!toast) return;
 
   toast.textContent = msg;
-  toast.className = `toast toast--${type} show`;
+  toast.className   = `toast toast--${type} show`;
 
   clearTimeout(toast._timeout);
   toast._timeout = setTimeout(() => {
@@ -729,7 +849,7 @@ function showToast(msg, type = 'info', duration = 4000) {
 }
 
 /* ============================================================
-   14. SMOOTH SCROLL — anclas
+   14. SMOOTH SCROLL
    ============================================================ */
 document.querySelectorAll('a[href^="#"]').forEach(link => {
   link.addEventListener('click', (e) => {
@@ -747,12 +867,10 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 /* ============================================================
    15. HELPERS
    ============================================================ */
-/** @param {number} ms @returns {Promise<void>} */
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/** @returns {string} */
 function generateTicketId() {
   const year = new Date().getFullYear();
   const rand = Math.floor(Math.random() * 900000) + 100000;

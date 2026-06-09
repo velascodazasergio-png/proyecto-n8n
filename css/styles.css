@@ -1648,3 +1648,125 @@ h1,h2,h3,h4,h5 {
   .hero__cta .btn--lg { padding: .75rem 1.2rem; font-size: .9rem; }
   .stats-bar__inner { grid-template-columns: 1fr; }
 }
+
+/* ── LEAFLET MAP ─────────────────────────────────────────── */
+.incident-map {
+  width: 100%;
+  height: 340px;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--color-border);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: border-color var(--transition);
+  z-index: 0;
+}
+
+.incident-map:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.18), var(--shadow-md);
+}
+
+/* Leaflet attribution override */
+.incident-map .leaflet-control-attribution {
+  font-size: .65rem;
+  background: rgba(255,255,255,.85);
+}
+
+/* Custom marker */
+.leaflet-custom-marker {
+  background: transparent;
+  border: none;
+}
+
+.custom-marker-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--color-accent);
+  color: #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 4px 12px rgba(59,130,246,.45);
+  transition: transform var(--transition), background var(--transition);
+}
+
+.custom-marker-pin:hover { background: var(--color-accent-hover); }
+
+.custom-marker-pin i {
+  transform: rotate(45deg);
+  font-size: 1rem;
+}
+
+/* Leaflet popup */
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-md) !important;
+  font-family: var(--font-body);
+  font-size: .85rem;
+}
+
+/* Map hint text */
+.map-hint {
+  margin-top: var(--space-2);
+  font-size: .8rem;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.map-hint i { font-size: .9rem; color: var(--color-accent); }
+
+/* Geocoding reverse address */
+.geo-address {
+  margin-top: var(--space-3);
+  min-height: 1.8rem;
+}
+
+.geo-addr-result {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(59,130,246,.07);
+  border: 1px solid rgba(59,130,246,.2);
+  border-radius: var(--radius);
+  font-size: .85rem;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.geo-addr-result i {
+  color: var(--color-accent);
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: .1rem;
+}
+
+.geo-addr-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: .82rem;
+  color: var(--color-text-muted);
+}
+
+.geo-addr-loading i {
+  animation: spin 1s linear infinite;
+}
+
+.geo-addr-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: .82rem;
+  color: var(--color-danger);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .incident-map { height: 260px; }
+}

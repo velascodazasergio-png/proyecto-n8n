@@ -3,507 +3,655 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SmartCity-Fix — Infraestructura Urbana Inteligente</title>
-  <meta name="description" content="Reporta daños en infraestructura urbana. IA multimodal, enrutamiento automático y seguimiento en tiempo real." />
+  <meta name="description" content="SmartCity-Fix — Sistema Inteligente de Diagnóstico y Enrutamiento de Reportes de Infraestructura Urbana." />
+  <title>SmartCity-Fix · Infraestructura Urbana Inteligente</title>
 
-  <!-- Fonts -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
 
-  <!-- Icons -->
+  <!-- Remix Icons CDN -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+
+  <!-- Leaflet.js CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 
-  <!-- ═══════════════ LOADER ═══════════════ -->
-  <div id="loader" class="loader" role="status" aria-label="Cargando SmartCity-Fix">
-    <div class="loader__inner">
-      <div class="loader__ring"></div>
-      <span class="loader__logo">SCF</span>
-    </div>
+  <!-- ░░ LOADER ░░ -->
+  <div id="loader" class="loader" aria-hidden="true">
+    <div class="loader__ring"></div>
+    <span class="loader__text">SmartCity<strong>Fix</strong></span>
   </div>
 
-  <!-- ═══════════════ TOAST ═══════════════ -->
-  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
-
-  <!-- ═══════════════ NAVBAR ═══════════════ -->
-  <header class="navbar" id="navbar" role="banner">
+  <!-- ░░ NAVBAR ░░ -->
+  <header class="navbar" id="navbar">
     <div class="container navbar__inner">
-      <a href="#hero" class="navbar__brand" aria-label="SmartCity-Fix inicio">
-        <span class="brand-icon"><i class="ri-building-4-line"></i></span>
-        <span class="brand-text">SmartCity<span class="brand-accent">Fix</span></span>
+      <a href="#inicio" class="navbar__logo" aria-label="SmartCity-Fix inicio">
+        <div class="logo-icon"><i class="ri-building-2-line"></i></div>
+        <span>SmartCity<strong>Fix</strong></span>
       </a>
-      <nav class="navbar__links" aria-label="Navegación principal">
-        <a href="#como-funciona" class="nav-link">Cómo funciona</a>
+      <nav class="navbar__nav" id="navMenu" aria-label="Navegación principal">
+        <a href="#inicio" class="nav-link">Inicio</a>
+        <a href="#como-funciona" class="nav-link">Cómo Funciona</a>
         <a href="#reportar" class="nav-link">Reportar</a>
-        <a href="#consultar" class="nav-link">Mi ticket</a>
-        <a href="#dashboard" class="nav-link">Dashboard</a>
-        <a href="#ia" class="nav-link">Motor IA</a>
+        <a href="#metricas" class="nav-link">Métricas</a>
         <a href="#contacto" class="nav-link">Contacto</a>
       </nav>
-      <button class="navbar__menu-btn" id="menuBtn" aria-label="Abrir menú" aria-expanded="false">
-        <i class="ri-menu-line"></i>
-      </button>
+      <div class="navbar__actions">
+        <a href="#reportar" class="btn btn--accent btn--sm">
+          <i class="ri-alert-line"></i> Reportar Ahora
+        </a>
+        <button class="navbar__toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
-    <nav class="navbar__mobile" id="mobileMenu" hidden aria-label="Menú móvil">
-      <a href="#como-funciona" class="nav-link" data-close-menu>Cómo funciona</a>
-      <a href="#reportar" class="nav-link" data-close-menu>Reportar</a>
-      <a href="#consultar" class="nav-link" data-close-menu>Mi ticket</a>
-      <a href="#dashboard" class="nav-link" data-close-menu>Dashboard</a>
-      <a href="#ia" class="nav-link" data-close-menu>Motor IA</a>
-      <a href="#contacto" class="nav-link" data-close-menu>Contacto</a>
-    </nav>
   </header>
 
-  <!-- ═══════════════ HERO ═══════════════ -->
-  <section class="hero" id="hero" aria-labelledby="hero-title">
-    <div class="container hero__inner">
-      <div class="hero__content fade-up">
-        <div class="hero__badge"><i class="ri-ai-generate"></i> Powered by IA multimodal</div>
-        <h1 id="hero-title" class="hero__title">
-          Infraestructura urbana<br />
-          <span class="gradient-text">inteligente y conectada</span>
-        </h1>
-        <p class="hero__subtitle">
-          Reporta baches, fugas, semáforos dañados y más. La IA clasifica, prioriza
-          y enruta automáticamente cada reporte al organismo responsable.
-        </p>
-        <div class="hero__cta">
-          <a href="#reportar" class="btn btn--primary btn--lg">
-            <i class="ri-alert-line"></i> Hacer reporte
-          </a>
-          <a href="#consultar" class="btn btn--ghost btn--lg">
-            <i class="ri-search-line"></i> Consultar ticket
-          </a>
-        </div>
-      </div>
-      <div class="hero__stats fade-up" style="--delay:.2s">
-        <div class="stat-card">
-          <span class="stat-card__num" data-counter="2847">0</span>
-          <span class="stat-card__label">Reportes procesados</span>
-        </div>
-        <div class="stat-card stat-card--accent">
-          <span class="stat-card__num" data-counter="94">0</span><span class="stat-card__unit">%</span>
-          <span class="stat-card__label">Precisión IA</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-card__num" data-counter="38">0</span><span class="stat-card__unit">min</span>
-          <span class="stat-card__label">Tiempo respuesta</span>
-        </div>
-        <div class="stat-card stat-card--success">
-          <span class="stat-card__num" data-counter="1923">0</span>
-          <span class="stat-card__label">Casos resueltos</span>
-        </div>
-      </div>
-    </div>
-    <div class="hero__bg-grid" aria-hidden="true"></div>
-  </section>
-
-  <!-- ═══════════════ CÓMO FUNCIONA ═══════════════ -->
-  <section class="steps" id="como-funciona" aria-labelledby="steps-title">
-    <div class="container">
-      <div class="section-header fade-up">
-        <span class="eyebrow">Proceso automatizado</span>
-        <h2 id="steps-title" class="section-title">Cómo funciona SmartCity-Fix</h2>
-        <p class="section-sub">Desde el reporte hasta la resolución, todo automatizado en minutos.</p>
-      </div>
-      <ol class="steps__grid" aria-label="Pasos del proceso">
-        <li class="step-card fade-up" style="--delay:.05s">
-          <div class="step-card__icon" aria-hidden="true"><i class="ri-user-location-line"></i></div>
-          <h3 class="step-card__title">Ciudadano reporta</h3>
-          <p class="step-card__desc">Completa el formulario con foto, ubicación y descripción del daño.</p>
-        </li>
-        <li class="step-card fade-up" style="--delay:.1s">
-          <div class="step-card__icon" aria-hidden="true"><i class="ri-eye-2-line"></i></div>
-          <h3 class="step-card__title">IA analiza imagen</h3>
-          <p class="step-card__desc">GPT-4o Vision detecta el tipo de daño y evalúa la criticidad.</p>
-        </li>
-        <li class="step-card fade-up" style="--delay:.15s">
-          <div class="step-card__icon" aria-hidden="true"><i class="ri-route-line"></i></div>
-          <h3 class="step-card__title">Enrutamiento automático</h3>
-          <p class="step-card__desc">n8n dirige el reporte al organismo municipal correspondiente.</p>
-        </li>
-        <li class="step-card fade-up" style="--delay:.2s">
-          <div class="step-card__icon" aria-hidden="true"><i class="ri-table-3"></i></div>
-          <h3 class="step-card__title">Registro en Sheets</h3>
-          <p class="step-card__desc">Cada reporte queda registrado con ticket ID único y trazabilidad completa.</p>
-        </li>
-        <li class="step-card fade-up" style="--delay:.25s">
-          <div class="step-card__icon" aria-hidden="true"><i class="ri-telegram-line"></i></div>
-          <h3 class="step-card__title">Notificación Telegram</h3>
-          <p class="step-card__desc">El ciudadano recibe confirmación inmediata y actualizaciones de estado.</p>
-        </li>
-        <li class="step-card fade-up" style="--delay:.3s">
-          <div class="step-card__icon" aria-hidden="true"><i class="ri-check-double-line"></i></div>
-          <h3 class="step-card__title">Resolución verificada</h3>
-          <p class="step-card__desc">El organismo marca el caso como resuelto. El ciudadano es notificado.</p>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <!-- ═══════════════ FORMULARIO REPORTE ═══════════════ -->
-  <section class="report" id="reportar" aria-labelledby="report-title">
-    <div class="container">
-      <div class="section-header fade-up">
-        <span class="eyebrow">Reporte ciudadano</span>
-        <h2 id="report-title" class="section-title">Reportar incidente</h2>
-        <p class="section-sub">Completa todos los campos. La IA procesará tu reporte en segundos.</p>
+  <main>
+    <!-- ░░ HERO ░░ -->
+    <section class="hero" id="inicio" aria-label="Bienvenida">
+      <div class="hero__bg-grid" aria-hidden="true"></div>
+      <div class="hero__orbs" aria-hidden="true">
+        <div class="orb orb--1"></div>
+        <div class="orb orb--2"></div>
+        <div class="orb orb--3"></div>
       </div>
 
-      <div class="report__layout">
-        <!-- Formulario -->
-        <div class="report__form-wrap fade-up">
-          <form id="reportForm" class="report-form" novalidate aria-label="Formulario de reporte de incidente">
+      <div class="container hero__inner">
+        <div class="hero__content fade-up">
+          <div class="hero__badge">
+            <i class="ri-cpu-line"></i>
+            <span>IA Multimodal · n8n · Tiempo Real</span>
+          </div>
+          <h1 class="hero__title">
+            Reporta daños urbanos y ayuda a construir una ciudad
+            <em class="hero__title--accent">más inteligente</em>
+          </h1>
+          <p class="hero__subtitle">
+            SmartCity-Fix utiliza Inteligencia Artificial para detectar, clasificar y priorizar incidentes de infraestructura urbana en tiempo real.
+          </p>
+          <div class="hero__cta">
+            <a href="#reportar" class="btn btn--accent btn--lg">
+              <i class="ri-alert-fill"></i> Reportar Ahora
+            </a>
+            <a href="#como-funciona" class="btn btn--ghost btn--lg">
+              Ver Funcionamiento <i class="ri-arrow-right-line"></i>
+            </a>
+          </div>
+          <div class="hero__trust">
+            <div class="trust-item"><i class="ri-shield-check-line"></i> Datos Seguros</div>
+            <div class="trust-item"><i class="ri-time-line"></i> Respuesta &lt; 24h</div>
+            <div class="trust-item"><i class="ri-map-pin-line"></i> Geolocalización</div>
+          </div>
+        </div>
 
-            <fieldset class="form-section">
-              <legend class="form-section__title"><i class="ri-user-line"></i> Datos personales</legend>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="nombre" class="form-label">Nombre completo <span aria-hidden="true">*</span></label>
-                  <input type="text" id="nombre" name="nombre" class="form-input" placeholder="Ej: Ana García Ruiz" required autocomplete="name" />
-                  <span class="form-error" id="nombre-error" role="alert"></span>
-                </div>
-                <div class="form-group">
-                  <label for="documento" class="form-label">Número de documento <span aria-hidden="true">*</span></label>
-                  <input type="text" id="documento" name="documento" class="form-input" placeholder="Ej: 1098765432" required autocomplete="off" />
-                  <span class="form-error" id="documento-error" role="alert"></span>
-                </div>
+        <div class="hero__visual fade-up fade-up--delay" aria-hidden="true">
+          <div class="city-card city-card--main">
+            <div class="city-card__header">
+              <span class="status-dot status-dot--live"></span>
+              <span>Sistema Activo</span>
+              <span class="ms-auto">23:47 GMT-5</span>
+            </div>
+            <div class="city-card__map">
+              <div class="map-pin map-pin--1 pulse"><i class="ri-map-pin-2-fill"></i></div>
+              <div class="map-pin map-pin--2 pulse pulse--delay"><i class="ri-map-pin-2-fill"></i></div>
+              <div class="map-pin map-pin--3"><i class="ri-map-pin-2-fill"></i></div>
+              <svg class="map-grid" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                    <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(59,130,246,0.12)" stroke-width="0.8"/>
+                  </pattern>
+                </defs>
+                <rect width="300" height="200" fill="url(#grid)"/>
+                <line x1="0" y1="100" x2="300" y2="100" stroke="rgba(59,130,246,0.06)" stroke-width="1.5"/>
+                <line x1="150" y1="0" x2="150" y2="200" stroke="rgba(59,130,246,0.06)" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <div class="city-card__stats">
+              <div class="mini-stat">
+                <span class="mini-stat__value" data-counter="147">0</span>
+                <span class="mini-stat__label">Activos</span>
               </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="telefono" class="form-label">Teléfono <span aria-hidden="true">*</span></label>
-                  <input type="tel" id="telefono" name="telefono" class="form-input" placeholder="+57 300 123 4567" required autocomplete="tel" />
-                  <span class="form-error" id="telefono-error" role="alert"></span>
+              <div class="mini-stat">
+                <span class="mini-stat__value" data-counter="89">0</span>
+                <span class="mini-stat__label">Resueltos hoy</span>
+              </div>
+              <div class="mini-stat">
+                <span class="mini-stat__value" data-counter="98">0</span>
+                <span class="mini-stat__label">% IA Conf.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="city-card city-card--alert">
+            <i class="ri-error-warning-fill"></i>
+            <div>
+              <strong>Bache crítico detectado</strong>
+              <span>Av. Principal #34 · Hace 2 min</span>
+            </div>
+            <span class="badge badge--danger">CRÍTICO</span>
+          </div>
+
+          <div class="city-card city-card--success">
+            <i class="ri-check-double-line"></i>
+            <div>
+              <strong>Luminaria reparada</strong>
+              <span>Calle 7 #12 · Resuelto</span>
+            </div>
+            <span class="badge badge--success">LISTO</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="stats-bar" aria-label="Estadísticas generales">
+        <div class="container stats-bar__inner">
+          <div class="stat-card fade-up">
+            <span class="stat-card__value" data-counter="12847">0</span>
+            <span class="stat-card__label">Reportes Procesados</span>
+          </div>
+          <div class="stat-card fade-up" style="--delay:0.1s">
+            <span class="stat-card__value" data-counter="10293">0</span>
+            <span class="stat-card__label">Incidentes Resueltos</span>
+          </div>
+          <div class="stat-card fade-up" style="--delay:0.2s">
+            <span class="stat-card__value" data-counter="18">0</span>
+            <span class="stat-card__label">Hrs. Prom. Respuesta</span>
+          </div>
+          <div class="stat-card fade-up" style="--delay:0.3s">
+            <span class="stat-card__value" data-counter="94">0</span>
+            <span class="stat-card__label">% Satisfacción</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ CÓMO FUNCIONA ░░ -->
+    <section class="how-it-works section" id="como-funciona" aria-labelledby="how-title">
+      <div class="container">
+        <div class="section-header fade-up">
+          <span class="section-tag"><i class="ri-flow-chart"></i> Proceso</span>
+          <h2 id="how-title" class="section-title">¿Cómo funciona?</h2>
+          <p class="section-sub">Un flujo automatizado impulsado por IA y automatización de extremo a extremo.</p>
+        </div>
+
+        <div class="flow-timeline">
+          <div class="flow-step fade-up" style="--delay:0s">
+            <div class="flow-step__number">01</div>
+            <div class="flow-step__icon"><i class="ri-user-voice-line"></i></div>
+            <div class="flow-step__content">
+              <h3>Ciudadano Reporta</h3>
+              <p>El ciudadano completa el formulario con foto, ubicación y descripción del incidente urbano.</p>
+            </div>
+            <div class="flow-step__connector" aria-hidden="true"></div>
+          </div>
+
+          <div class="flow-step fade-up" style="--delay:0.1s">
+            <div class="flow-step__number">02</div>
+            <div class="flow-step__icon"><i class="ri-upload-cloud-2-line"></i></div>
+            <div class="flow-step__content">
+              <h3>Recepción de Evidencia</h3>
+              <p>El sistema recibe la imagen y datos del reporte de forma segura vía API REST.</p>
+            </div>
+            <div class="flow-step__connector" aria-hidden="true"></div>
+          </div>
+
+          <div class="flow-step fade-up" style="--delay:0.2s">
+            <div class="flow-step__number">03</div>
+            <div class="flow-step__icon"><i class="ri-eye-2-line"></i></div>
+            <div class="flow-step__content">
+              <h3>Análisis con IA</h3>
+              <p>Visión artificial y NLP analizan la imagen y descripción para clasificar el tipo de daño.</p>
+            </div>
+            <div class="flow-step__connector" aria-hidden="true"></div>
+          </div>
+
+          <div class="flow-step fade-up" style="--delay:0.3s">
+            <div class="flow-step__number">04</div>
+            <div class="flow-step__icon"><i class="ri-bar-chart-grouped-line"></i></div>
+            <div class="flow-step__content">
+              <h3>Priorización</h3>
+              <p>El motor de IA calcula la criticidad: Crítica, Moderada o Baja según el riesgo.</p>
+            </div>
+            <div class="flow-step__connector" aria-hidden="true"></div>
+          </div>
+
+          <div class="flow-step fade-up" style="--delay:0.4s">
+            <div class="flow-step__number">05</div>
+            <div class="flow-step__icon"><i class="ri-route-line"></i></div>
+            <div class="flow-step__content">
+              <h3>Enrutamiento n8n</h3>
+              <p>n8n automatiza la asignación al departamento correcto y registra en Google Sheets.</p>
+            </div>
+            <div class="flow-step__connector" aria-hidden="true"></div>
+          </div>
+
+          <div class="flow-step fade-up" style="--delay:0.5s">
+            <div class="flow-step__number">06</div>
+            <div class="flow-step__icon"><i class="ri-telegram-line"></i></div>
+            <div class="flow-step__content">
+              <h3>Notificación al Ciudadano</h3>
+              <p>El ciudadano recibe actualizaciones en tiempo real por Telegram con el estado del reporte.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ FORMULARIO DE REPORTE ░░ -->
+    <section class="report-section section" id="reportar" aria-labelledby="report-title">
+      <div class="container">
+        <div class="section-header fade-up">
+          <span class="section-tag"><i class="ri-file-add-line"></i> Reportar</span>
+          <h2 id="report-title" class="section-title">Reportar Incidente</h2>
+          <p class="section-sub">Complete el formulario con la información del daño urbano detectado.</p>
+        </div>
+
+        <div class="report-layout fade-up">
+          <form id="reportForm" class="report-form" novalidate aria-label="Formulario de reporte">
+
+            <!-- Personal -->
+            <fieldset class="form-group">
+              <legend class="form-legend"><i class="ri-user-line"></i> Información Personal</legend>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label for="fullName">Nombre Completo <span class="required">*</span></label>
+                  <input type="text" id="fullName" name="fullName" placeholder="Juan Pérez García" autocomplete="name" />
+                  <span class="field-error" id="err-fullName" role="alert"></span>
                 </div>
-                <div class="form-group">
-                  <label for="correo" class="form-label">Correo electrónico <span aria-hidden="true">*</span></label>
-                  <input type="email" id="correo" name="correo" class="form-input" placeholder="ana@correo.com" required autocomplete="email" />
-                  <span class="form-error" id="correo-error" role="alert"></span>
+                <div class="form-field">
+                  <label for="docId">Documento de Identidad <span class="required">*</span></label>
+                  <input type="text" id="docId" name="docId" placeholder="1234567890" autocomplete="off" />
+                  <span class="field-error" id="err-docId" role="alert"></span>
+                </div>
+                <div class="form-field">
+                  <label for="phone">Teléfono <span class="required">*</span></label>
+                  <input type="tel" id="phone" name="phone" placeholder="+57 300 000 0000" autocomplete="tel" />
+                  <span class="field-error" id="err-phone" role="alert"></span>
+                </div>
+                <div class="form-field">
+                  <label for="email">Correo Electrónico <span class="required">*</span></label>
+                  <input type="email" id="email" name="email" placeholder="juan@correo.com" autocomplete="email" />
+                  <span class="field-error" id="err-email" role="alert"></span>
                 </div>
               </div>
             </fieldset>
 
-            <fieldset class="form-section">
-              <legend class="form-section__title"><i class="ri-map-pin-line"></i> Ubicación del incidente</legend>
-              <div class="form-row form-row--3">
-                <div class="form-group">
-                  <label for="latitud" class="form-label">Latitud</label>
-                  <input type="number" id="latitud" name="latitud" class="form-input" step="any" placeholder="7.119349" min="-90" max="90" readonly />
+            <!-- Incidente -->
+            <fieldset class="form-group">
+              <legend class="form-legend"><i class="ri-alert-line"></i> Información del Incidente</legend>
+              <div class="form-grid">
+                <div class="form-field form-field--full">
+                  <label>Tipo de Incidente <span class="required">*</span></label>
+                  <div class="incident-types" id="incidentTypes" role="group" aria-label="Tipo de incidente">
+                    <label class="incident-chip">
+                      <input type="radio" name="incidentType" value="bache" />
+                      <span><i class="ri-road-map-line"></i> Bache</span>
+                    </label>
+                    <label class="incident-chip">
+                      <input type="radio" name="incidentType" value="fuga_agua" />
+                      <span><i class="ri-drop-line"></i> Fuga de Agua</span>
+                    </label>
+                    <label class="incident-chip">
+                      <input type="radio" name="incidentType" value="luminaria" />
+                      <span><i class="ri-lightbulb-line"></i> Luminaria</span>
+                    </label>
+                    <label class="incident-chip">
+                      <input type="radio" name="incidentType" value="semaforo" />
+                      <span><i class="ri-traffic-light-line"></i> Semáforo</span>
+                    </label>
+                    <label class="incident-chip">
+                      <input type="radio" name="incidentType" value="cableado" />
+                      <span><i class="ri-plug-line"></i> Cableado</span>
+                    </label>
+                    <label class="incident-chip">
+                      <input type="radio" name="incidentType" value="otro" />
+                      <span><i class="ri-more-line"></i> Otro</span>
+                    </label>
+                  </div>
+                  <span class="field-error" id="err-incidentType" role="alert"></span>
                 </div>
-                <div class="form-group">
-                  <label for="longitud" class="form-label">Longitud</label>
-                  <input type="number" id="longitud" name="longitud" class="form-input" step="any" placeholder="-73.122741" min="-180" max="180" readonly />
+              </div>
+            </fieldset>
+
+            <!-- Ubicación -->
+            <fieldset class="form-group">
+              <legend class="form-legend"><i class="ri-map-pin-line"></i> Ubicación del Incidente</legend>
+              <div class="form-grid">
+                <div class="form-field">
+                  <label for="lat">Latitud <span class="required">*</span></label>
+                  <input type="text" id="lat" name="lat" placeholder="4.6097" readonly />
+                  <span class="field-error" id="err-lat" role="alert"></span>
                 </div>
-                <div class="form-group">
-                  <button type="button" id="geoBtn" class="btn btn--secondary geo-btn">
-                    <i class="ri-crosshair-2-line"></i>
-                    <span id="geoBtnText">Obtener ubicación</span>
+                <div class="form-field">
+                  <label for="lng">Longitud <span class="required">*</span></label>
+                  <input type="text" id="lng" name="lng" placeholder="-74.0817" readonly />
+                  <span class="field-error" id="err-coords" role="alert"></span>
+                </div>
+                <div class="form-field form-field--full">
+                  <button type="button" id="geoBtn" class="btn btn--outline btn--geo">
+                    <i class="ri-map-pin-2-fill"></i> Obtener mi ubicación
                   </button>
+                  <span id="geoStatus" class="geo-status" aria-live="polite"></span>
+                </div>
+                <div class="form-field form-field--full">
+                  <div id="incidentMap" class="incident-map" aria-label="Mapa interactivo para marcar la ubicación del incidente"></div>
+                  <p class="map-hint"><i class="ri-cursor-line"></i> Haz clic en el mapa o arrastra el marcador para ajustar la ubicación exacta.</p>
+                  <div id="geoAddress" class="geo-address" aria-live="polite"></div>
                 </div>
               </div>
-              <div class="form-group">
-                <label for="direccion" class="form-label">Dirección detectada</label>
-                <input type="text" id="direccion" name="direccion" class="form-input" placeholder="Se completa automáticamente al obtener ubicación" readonly />
-              </div>
-              <div id="geo-status" class="geo-status" role="status" aria-live="polite"></div>
             </fieldset>
 
-            <fieldset class="form-section">
-              <legend class="form-section__title"><i class="ri-alert-line"></i> Tipo de incidente</legend>
-              <div class="incident-grid" role="radiogroup" aria-label="Tipo de incidente">
-                <label class="incident-opt" tabindex="0">
-                  <input type="radio" name="tipo" value="bache" class="sr-only" required />
-                  <i class="ri-road-map-line"></i>
-                  <span>Bache</span>
-                </label>
-                <label class="incident-opt" tabindex="0">
-                  <input type="radio" name="tipo" value="fuga_agua" class="sr-only" />
-                  <i class="ri-drop-line"></i>
-                  <span>Fuga de agua</span>
-                </label>
-                <label class="incident-opt" tabindex="0">
-                  <input type="radio" name="tipo" value="semaforo" class="sr-only" />
-                  <i class="ri-traffic-light-line"></i>
-                  <span>Semáforo dañado</span>
-                </label>
-                <label class="incident-opt" tabindex="0">
-                  <input type="radio" name="tipo" value="luminaria" class="sr-only" />
-                  <i class="ri-flashlight-line"></i>
-                  <span>Luminaria</span>
-                </label>
-                <label class="incident-opt" tabindex="0">
-                  <input type="radio" name="tipo" value="cableado" class="sr-only" />
-                  <i class="ri-plug-line"></i>
-                  <span>Cableado expuesto</span>
-                </label>
-                <label class="incident-opt" tabindex="0">
-                  <input type="radio" name="tipo" value="otro" class="sr-only" />
-                  <i class="ri-more-line"></i>
-                  <span>Otro</span>
-                </label>
-              </div>
-              <span class="form-error" id="tipo-error" role="alert"></span>
-            </fieldset>
-
-            <fieldset class="form-section">
-              <legend class="form-section__title"><i class="ri-image-line"></i> Evidencia fotográfica</legend>
-              <div class="upload-zone" id="uploadZone" tabindex="0" role="button" aria-label="Subir fotografía del incidente" aria-describedby="upload-desc">
-                <div class="upload-zone__placeholder" id="uploadPlaceholder">
-                  <i class="ri-upload-cloud-2-line"></i>
-                  <p>Arrastra una foto aquí o <strong>haz clic para seleccionar</strong></p>
-                  <span id="upload-desc" class="upload-zone__hint">Solo imágenes (JPG, PNG, WebP) · máx. 10 MB</span>
+            <!-- Evidencia -->
+            <fieldset class="form-group">
+              <legend class="form-legend"><i class="ri-image-add-line"></i> Evidencia Fotográfica</legend>
+              <div class="form-field">
+                <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Subir fotografía del incidente">
+                  <input type="file" id="photoInput" name="photo" accept="image/*" class="upload-input" aria-hidden="true" tabindex="-1" />
+                  <div class="upload-zone__prompt" id="uploadPrompt">
+                    <i class="ri-camera-line"></i>
+                    <strong>Arrastra una foto o haz clic para seleccionar</strong>
+                    <span>JPG, PNG, WEBP · Máx. 10 MB</span>
+                  </div>
+                  <div class="upload-zone__preview" id="uploadPreview" aria-hidden="true">
+                    <img id="previewImg" src="" alt="Vista previa del incidente" />
+                    <button type="button" id="removePhoto" class="remove-photo" aria-label="Eliminar foto">
+                      <i class="ri-close-line"></i>
+                    </button>
+                  </div>
                 </div>
-                <img id="uploadPreview" class="upload-zone__preview" src="" alt="Vista previa de la evidencia" hidden />
-                <input type="file" id="fotografia" name="fotografia" accept="image/*" class="sr-only" required aria-required="true" />
+                <span class="field-error" id="err-photo" role="alert"></span>
               </div>
-              <button type="button" id="removePhoto" class="btn btn--danger-ghost btn--sm" hidden>
-                <i class="ri-delete-bin-line"></i> Quitar foto
-              </button>
-              <span class="form-error" id="foto-error" role="alert"></span>
             </fieldset>
 
-            <fieldset class="form-section">
-              <legend class="form-section__title"><i class="ri-file-text-line"></i> Descripción</legend>
-              <div class="form-group">
-                <label for="descripcion" class="form-label">Describe el problema <span aria-hidden="true">*</span></label>
-                <textarea id="descripcion" name="descripcion" class="form-input form-textarea" rows="4"
-                  placeholder="Describe la ubicación exacta, el daño visible y cualquier riesgo para los ciudadanos..." required minlength="20" aria-describedby="desc-counter"></textarea>
-                <div class="textarea-footer">
-                  <span class="form-error" id="descripcion-error" role="alert"></span>
-                  <span id="desc-counter" class="char-counter" aria-live="polite">0 / 20 mín.</span>
+            <!-- Descripción -->
+            <fieldset class="form-group">
+              <legend class="form-legend"><i class="ri-chat-3-line"></i> Descripción</legend>
+              <div class="form-field">
+                <label for="description">Describa el daño en detalle <span class="required">*</span></label>
+                <textarea id="description" name="description" rows="4" maxlength="500" placeholder="Ej: Hay un bache de aproximadamente 50cm de diámetro en el carril derecho que representa un peligro para los vehículos…"></textarea>
+                <div class="char-counter">
+                  <span id="charCount">0</span>/500
                 </div>
+                <span class="field-error" id="err-description" role="alert"></span>
               </div>
             </fieldset>
 
             <div class="form-submit">
-              <button type="submit" id="submitBtn" class="btn btn--primary btn--lg btn--full">
-                <span id="submitBtnContent">
-                  <i class="ri-send-plane-line"></i> Enviar reporte
-                </span>
+              <button type="submit" class="btn btn--accent btn--lg btn--full" id="submitBtn">
+                <i class="ri-send-plane-fill"></i>
+                <span>Enviar Reporte</span>
+                <div class="btn-spinner" aria-hidden="true"></div>
               </button>
             </div>
           </form>
-        </div>
 
-        <!-- Panel derecho -->
-        <aside class="report__sidebar fade-up" style="--delay:.15s" aria-label="Información del proceso">
-          <div class="sidebar-card">
-            <h3 class="sidebar-card__title"><i class="ri-information-line"></i> ¿Qué pasa después?</h3>
-            <ol class="sidebar-steps">
-              <li><strong>IA clasifica</strong> la imagen y el texto en &lt; 10 segundos</li>
-              <li><strong>Ticket generado</strong> con ID único para seguimiento</li>
-              <li><strong>Organismo responsable</strong> notificado automáticamente</li>
-              <li><strong>Telegram</strong> te confirma la recepción</li>
-              <li><strong>Actualizaciones</strong> en cada cambio de estado</li>
-            </ol>
-          </div>
-          <div class="sidebar-card sidebar-card--warning">
-            <h3 class="sidebar-card__title"><i class="ri-shield-check-line"></i> Prioridad automática</h3>
-            <p>Los reportes con palabras como <strong>gas</strong>, <strong>explosión</strong>, <strong>hospital</strong> o <strong>alto voltaje</strong> se escalan a <span class="badge badge--danger">CRÍTICO</span> de forma inmediata.</p>
-          </div>
-          <div class="sidebar-card">
-            <h3 class="sidebar-card__title"><i class="ri-telegram-line"></i> Bot de Telegram</h3>
-            <p>Para consultas rápidas busca <code>@SmartCityFixBot</code> en Telegram y usa:</p>
-            <ul class="command-list">
-              <li><code>/ticket SCF-2024-XXXXXX</code> — estado del reporte</li>
-              <li><code>/estado</code> — listado reciente</li>
-              <li><code>/ayuda</code> — guía completa</li>
-            </ul>
-          </div>
-        </aside>
-      </div>
-    </div>
-  </section>
+          <!-- Ticket Status Side -->
+          <aside class="ticket-panel" aria-label="Consulta de estado">
+            <div class="ticket-panel__header">
+              <i class="ri-search-eye-line"></i>
+              <h3>Consultar Estado del Ticket</h3>
+            </div>
+            <div class="form-field">
+              <label for="ticketId">Número de Ticket</label>
+              <div class="ticket-input-row">
+                <input type="text" id="ticketId" placeholder="SCF-2024-001234" />
+                <button type="button" id="checkTicket" class="btn btn--accent btn--sm">
+                  <i class="ri-search-line"></i>
+                </button>
+              </div>
+            </div>
 
-  <!-- ═══════════════ TICKET ENVIADO (modal) ═══════════════ -->
-  <div id="ticketModal" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal">
-      <div class="modal__icon modal__icon--success"><i class="ri-checkbox-circle-line"></i></div>
-      <h2 id="modal-title" class="modal__title">¡Reporte enviado!</h2>
-      <p class="modal__sub">Tu incidente fue registrado y la IA está procesando la información.</p>
-      <div class="modal__ticket">
-        <span class="modal__ticket-label">Tu número de ticket</span>
-        <span id="modalTicketId" class="modal__ticket-id">SCF-2024-000000</span>
-      </div>
-      <div class="modal__details" id="modalDetails"></div>
-      <p class="modal__note"><i class="ri-telegram-line"></i> Recibirás una notificación en Telegram con el estado inicial.</p>
-      <div class="modal__actions">
-        <button type="button" class="btn btn--ghost" id="copyTicketBtn">
-          <i class="ri-file-copy-line"></i> Copiar ticket
-        </button>
-        <button type="button" class="btn btn--primary" id="closeModalBtn">Listo</button>
-      </div>
-    </div>
-  </div>
+            <div class="ticket-result" id="ticketResult" aria-live="polite"></div>
 
-  <!-- ═══════════════ CONSULTAR TICKET ═══════════════ -->
-  <section class="consult" id="consultar" aria-labelledby="consult-title">
-    <div class="container">
-      <div class="section-header fade-up">
-        <span class="eyebrow">Seguimiento</span>
-        <h2 id="consult-title" class="section-title">Consultar estado de mi reporte</h2>
-      </div>
-      <div class="consult__layout fade-up">
-        <div class="consult__search">
-          <label for="ticketInput" class="form-label">Número de ticket</label>
-          <div class="search-row">
-            <input type="text" id="ticketInput" class="form-input" placeholder="SCF-2024-XXXXXX" aria-label="Número de ticket para consulta" />
-            <button type="button" id="consultBtn" class="btn btn--primary">
-              <i class="ri-search-line"></i> Consultar
-            </button>
-          </div>
-        </div>
-        <div id="ticketResult" class="ticket-result" role="region" aria-live="polite" aria-label="Resultado de consulta de ticket" hidden>
-          <!-- filled by JS -->
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════ DASHBOARD ═══════════════ -->
-  <section class="dashboard" id="dashboard" aria-labelledby="dash-title">
-    <div class="container">
-      <div class="section-header fade-up">
-        <span class="eyebrow">Panel de control</span>
-        <h2 id="dash-title" class="section-title">Dashboard en tiempo real</h2>
-        <p class="section-sub">Métricas provenientes de Google Sheets, actualizadas cada 5 minutos.</p>
-      </div>
-      <div class="dash-metrics fade-up">
-        <div class="metric-card metric-card--danger">
-          <i class="ri-alarm-warning-line"></i>
-          <span class="metric-card__num" id="metricCriticos">—</span>
-          <span class="metric-card__label">Críticos</span>
-        </div>
-        <div class="metric-card metric-card--warning">
-          <i class="ri-alert-line"></i>
-          <span class="metric-card__num" id="metricModerados">—</span>
-          <span class="metric-card__label">Moderados</span>
-        </div>
-        <div class="metric-card metric-card--info">
-          <i class="ri-information-line"></i>
-          <span class="metric-card__num" id="metricBajos">—</span>
-          <span class="metric-card__label">Bajos</span>
-        </div>
-        <div class="metric-card metric-card--success">
-          <i class="ri-check-double-line"></i>
-          <span class="metric-card__num" id="metricResueltos">—</span>
-          <span class="metric-card__label">Resueltos</span>
-        </div>
-        <div class="metric-card">
-          <i class="ri-time-line"></i>
-          <span class="metric-card__num" id="metricTiempo">—</span>
-          <span class="metric-card__label">Tiempo promedio</span>
-        </div>
-        <div class="metric-card">
-          <i class="ri-bar-chart-line"></i>
-          <span class="metric-card__num" id="metricTotal">—</span>
-          <span class="metric-card__label">Total reportes</span>
+            <div class="ticket-demo">
+              <p>Prueba con: <button type="button" class="demo-ticket" data-ticket="SCF-2024-001234">SCF-2024-001234</button></p>
+            </div>
+          </aside>
         </div>
       </div>
 
-      <div class="dash-charts fade-up" style="--delay:.1s">
-        <div class="chart-card">
-          <h3 class="chart-card__title">Reportes por categoría</h3>
-          <svg id="barChart" class="bar-chart" viewBox="0 0 400 220" role="img" aria-label="Gráfico de barras de reportes por categoría"></svg>
-        </div>
-        <div class="chart-card">
-          <h3 class="chart-card__title">Distribución de prioridad</h3>
-          <svg id="donutChart" class="donut-chart" viewBox="0 0 220 220" role="img" aria-label="Gráfico donut de distribución de prioridad"></svg>
-        </div>
-      </div>
-    </div>
-  </section>
+      <!-- Toast -->
+      <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    </section>
 
-  <!-- ═══════════════ MOTOR IA ═══════════════ -->
-  <section class="ia-section" id="ia" aria-labelledby="ia-title">
-    <div class="container">
-      <div class="section-header fade-up">
-        <span class="eyebrow">Inteligencia Artificial</span>
-        <h2 id="ia-title" class="section-title">Motor de análisis IA</h2>
-        <p class="section-sub">GPT-4o Vision + análisis semántico para clasificación y priorización automática.</p>
-      </div>
-      <div class="ia-grid fade-up">
-        <div class="ia-card">
-          <i class="ri-eye-2-line ia-card__icon"></i>
-          <h3>Análisis visual</h3>
-          <p>Detecta el tipo de daño en la imagen con alta precisión usando GPT-4o Vision.</p>
-          <div class="progress-bar" role="progressbar" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100" aria-label="Precisión visual 94%">
-            <div class="progress-bar__fill" style="--target:94%"></div>
-            <span>94%</span>
-          </div>
+    <!-- ░░ IA ENGINE ░░ -->
+    <section class="ai-section section" id="ia-motor" aria-labelledby="ai-title">
+      <div class="container">
+        <div class="section-header fade-up">
+          <span class="section-tag"><i class="ri-robot-2-line"></i> Inteligencia Artificial</span>
+          <h2 id="ai-title" class="section-title">Motor de IA</h2>
+          <p class="section-sub">Tecnología de punta aplicada al análisis urbano en tiempo real.</p>
         </div>
-        <div class="ia-card">
-          <i class="ri-text-snippet ri-text-snippet ia-card__icon"></i>
-          <h3>Análisis semántico</h3>
-          <p>Detecta palabras clave críticas en la descripción para escalar la prioridad.</p>
-          <div class="progress-bar" role="progressbar" aria-valuenow="98" aria-valuemin="0" aria-valuemax="100" aria-label="Precisión semántica 98%">
-            <div class="progress-bar__fill" style="--target:98%"></div>
-            <span>98%</span>
-          </div>
-        </div>
-        <div class="ia-card">
-          <i class="ri-map-pin-2-line ia-card__icon"></i>
-          <h3>Detección duplicados</h3>
-          <p>Compara cada reporte con incidentes en un radio de 20 metros antes de registrar.</p>
-          <div class="progress-bar" role="progressbar" aria-valuenow="87" aria-valuemin="0" aria-valuemax="100" aria-label="Precisión duplicados 87%">
-            <div class="progress-bar__fill" style="--target:87%"></div>
-            <span>87%</span>
-          </div>
-        </div>
-        <div class="ia-card">
-          <i class="ri-spam-2-line ia-card__icon"></i>
-          <h3>Filtro anti-spam</h3>
-          <p>Rechaza imágenes irrelevantes, fotografías personales y contenido no relacionado.</p>
-          <div class="progress-bar" role="progressbar" aria-valuenow="91" aria-valuemin="0" aria-valuemax="100" aria-label="Precisión anti-spam 91%">
-            <div class="progress-bar__fill" style="--target:91%"></div>
-            <span>91%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ═══════════════ CONTACTO ═══════════════ -->
-  <section class="contact" id="contacto" aria-labelledby="contact-title">
-    <div class="container">
-      <div class="section-header fade-up">
-        <span class="eyebrow">Contacto</span>
-        <h2 id="contact-title" class="section-title">¿Tienes dudas?</h2>
-      </div>
-      <div class="contact__grid fade-up">
-        <div class="contact-item">
-          <i class="ri-mail-line"></i>
-          <span>soporte@smartcityfix.gov.co</span>
-        </div>
-        <div class="contact-item">
-          <i class="ri-telegram-line"></i>
-          <span>@SmartCityFixBot</span>
-        </div>
-        <div class="contact-item">
-          <i class="ri-phone-line"></i>
-          <span>Línea 195 — Infraestructura urbana</span>
-        </div>
-      </div>
-    </div>
-  </section>
+        <div class="ai-grid">
+          <div class="ai-card fade-up" style="--delay:0s">
+            <div class="ai-card__icon"><i class="ri-eye-2-line"></i></div>
+            <h3>Visión Artificial</h3>
+            <p>Identificación automática de daños urbanos en imágenes con modelos multimodales de última generación.</p>
+            <div class="ai-card__bar">
+              <label>Precisión del Modelo</label>
+              <div class="progress-bar"><div class="progress-bar__fill" data-pct="94"></div></div>
+              <span class="progress-pct">94%</span>
+            </div>
+          </div>
 
-  <!-- ═══════════════ FOOTER ═══════════════ -->
-  <footer class="footer" role="contentinfo">
+          <div class="ai-card fade-up" style="--delay:0.15s">
+            <div class="ai-card__icon"><i class="ri-chat-voice-line"></i></div>
+            <h3>Procesamiento NLP</h3>
+            <p>Análisis semántico de la descripción textual para enriquecer el contexto del diagnóstico automático.</p>
+            <div class="ai-card__bar">
+              <label>Confianza NLP</label>
+              <div class="progress-bar"><div class="progress-bar__fill" data-pct="88"></div></div>
+              <span class="progress-pct">88%</span>
+            </div>
+          </div>
+
+          <div class="ai-card fade-up" style="--delay:0.3s">
+            <div class="ai-card__icon"><i class="ri-bar-chart-box-line"></i></div>
+            <h3>Priorización</h3>
+            <p>El sistema clasifica cada incidente en tres niveles de criticidad para optimizar los tiempos de respuesta.</p>
+            <div class="priority-pills">
+              <span class="pill pill--critical"><i class="ri-arrow-up-fill"></i> Crítica</span>
+              <span class="pill pill--moderate"><i class="ri-equal-fill"></i> Moderada</span>
+              <span class="pill pill--low"><i class="ri-arrow-down-fill"></i> Baja</span>
+            </div>
+          </div>
+
+          <div class="ai-card ai-card--wide fade-up" style="--delay:0.45s">
+            <div class="ai-card__icon"><i class="ri-cpu-line"></i></div>
+            <h3>Confianza Global del Modelo</h3>
+            <p>Combinación de visión artificial + NLP + datos de geolocalización.</p>
+            <div class="ai-card__big-bar">
+              <div class="progress-bar progress-bar--lg">
+                <div class="progress-bar__fill progress-bar__fill--gradient" data-pct="96"></div>
+              </div>
+              <span class="big-pct" data-counter="96">0</span><span>%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ MÉTRICAS ░░ -->
+    <section class="metrics-section section" id="metricas" aria-labelledby="metrics-title">
+      <div class="container">
+        <div class="section-header fade-up">
+          <span class="section-tag"><i class="ri-pie-chart-2-line"></i> Datos</span>
+          <h2 id="metrics-title" class="section-title">Dashboard de Métricas</h2>
+          <p class="section-sub">Seguimiento en tiempo real del estado de la infraestructura urbana.</p>
+        </div>
+
+        <div class="metrics-grid">
+          <!-- Chart 1 -->
+          <div class="chart-card fade-up">
+            <div class="chart-card__header">
+              <h3>Incidentes por Categoría</h3>
+              <span class="chart-tag">Este mes</span>
+            </div>
+            <div class="bar-chart" id="barChart" aria-label="Gráfico de barras por categoría"></div>
+          </div>
+
+          <!-- Chart 2 -->
+          <div class="chart-card fade-up" style="--delay:0.15s">
+            <div class="chart-card__header">
+              <h3>Distribución por Prioridad</h3>
+              <span class="chart-tag">Tiempo real</span>
+            </div>
+            <div class="donut-chart-wrap" aria-label="Gráfico de dona por prioridad">
+              <svg class="donut-chart" viewBox="0 0 140 140" role="img" aria-label="Distribución por prioridad">
+                <circle class="donut-track" cx="70" cy="70" r="54" />
+                <circle class="donut-seg donut-seg--critical" cx="70" cy="70" r="54" stroke-dasharray="101.8 237.7" stroke-dashoffset="0" />
+                <circle class="donut-seg donut-seg--moderate" cx="70" cy="70" r="54" stroke-dasharray="130.3 209.2" stroke-dashoffset="-101.8" />
+                <circle class="donut-seg donut-seg--low" cx="70" cy="70" r="54" stroke-dasharray="107.6 231.9" stroke-dashoffset="-232.1" />
+                <text class="donut-center-value" x="70" y="65" text-anchor="middle">339</text>
+                <text class="donut-center-label" x="70" y="80" text-anchor="middle">Reportes</text>
+              </svg>
+              <ul class="donut-legend">
+                <li><span class="legend-dot legend-dot--critical"></span> Crítico <strong>30%</strong></li>
+                <li><span class="legend-dot legend-dot--moderate"></span> Moderado <strong>38%</strong></li>
+                <li><span class="legend-dot legend-dot--low"></span> Bajo <strong>32%</strong></li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Indicators -->
+          <div class="chart-card chart-card--indicators fade-up" style="--delay:0.3s">
+            <div class="chart-card__header">
+              <h3>Indicadores Activos</h3>
+              <span class="chart-tag">En vivo</span>
+            </div>
+            <div class="indicator-list">
+              <div class="indicator indicator--critical">
+                <i class="ri-error-warning-fill"></i>
+                <div class="indicator__info">
+                  <span>Críticos</span>
+                  <strong data-counter="42">0</strong>
+                </div>
+                <div class="indicator__bar"><div style="width:42%"></div></div>
+              </div>
+              <div class="indicator indicator--moderate">
+                <i class="ri-alert-fill"></i>
+                <div class="indicator__info">
+                  <span>Moderados</span>
+                  <strong data-counter="78">0</strong>
+                </div>
+                <div class="indicator__bar"><div style="width:78%"></div></div>
+              </div>
+              <div class="indicator indicator--low">
+                <i class="ri-information-fill"></i>
+                <div class="indicator__info">
+                  <span>Bajos</span>
+                  <strong data-counter="65">0</strong>
+                </div>
+                <div class="indicator__bar"><div style="width:65%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time chart -->
+          <div class="chart-card fade-up" style="--delay:0.45s">
+            <div class="chart-card__header">
+              <h3>Tiempo Promedio de Solución</h3>
+              <span class="chart-tag">Horas</span>
+            </div>
+            <div class="line-chart" id="lineChart" aria-label="Gráfico de líneas tiempo promedio"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ░░ CONTACTO ░░ -->
+    <section class="contact-section section" id="contacto" aria-labelledby="contact-title">
+      <div class="container">
+        <div class="section-header fade-up">
+          <span class="section-tag"><i class="ri-customer-service-2-line"></i> Contacto</span>
+          <h2 id="contact-title" class="section-title">¿Tienes dudas?</h2>
+          <p class="section-sub">Estamos aquí para ayudarte. Comunícate con nuestro equipo.</p>
+        </div>
+
+        <div class="contact-grid fade-up">
+          <div class="contact-card">
+            <i class="ri-mail-send-line"></i>
+            <h4>Correo</h4>
+            <a href="mailto:soporte@smartcityfix.gov">soporte@smartcityfix.gov</a>
+          </div>
+          <div class="contact-card">
+            <i class="ri-telegram-line"></i>
+            <h4>Telegram</h4>
+            <a href="https://t.me/smartcityfix_bot" target="_blank" rel="noopener">@smartcityfix_bot</a>
+          </div>
+          <div class="contact-card">
+            <i class="ri-phone-line"></i>
+            <h4>Línea Ciudadana</h4>
+            <a href="tel:+5718000000">018000 000 000</a>
+          </div>
+          <div class="contact-card">
+            <i class="ri-map-pin-2-line"></i>
+            <h4>Oficina Principal</h4>
+            <address>Centro Cívico, Piso 3<br>Alcaldía Municipal</address>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ░░ FOOTER ░░ -->
+  <footer class="footer" aria-label="Pie de página">
     <div class="container footer__inner">
-      <span class="brand-text">SmartCity<span class="brand-accent">Fix</span></span>
-      <p class="footer__copy">© 2024 SmartCity-Fix. Proyecto académico open source. MIT License.</p>
+      <div class="footer__brand">
+        <div class="navbar__logo">
+          <div class="logo-icon"><i class="ri-building-2-line"></i></div>
+          <span>SmartCity<strong>Fix</strong></span>
+        </div>
+        <p>Sistema Inteligente de Diagnóstico y Enrutamiento de Reportes de Infraestructura Urbana.</p>
+        <div class="footer__social">
+          <a href="#" aria-label="Twitter"><i class="ri-twitter-x-line"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="ri-linkedin-fill"></i></a>
+          <a href="#" aria-label="GitHub"><i class="ri-github-fill"></i></a>
+          <a href="#" aria-label="Telegram"><i class="ri-telegram-fill"></i></a>
+        </div>
+      </div>
+
       <div class="footer__links">
-        <a href="#hero">Inicio</a>
-        <a href="#reportar">Reportar</a>
-        <a href="#dashboard">Dashboard</a>
+        <div class="footer__col">
+          <h5>Plataforma</h5>
+          <a href="#inicio">Inicio</a>
+          <a href="#como-funciona">Cómo Funciona</a>
+          <a href="#reportar">Reportar</a>
+          <a href="#metricas">Métricas</a>
+        </div>
+        <div class="footer__col">
+          <h5>Tecnología</h5>
+          <a href="#">n8n Workflows</a>
+          <a href="#">IA Multimodal</a>
+          <a href="#">Google Sheets</a>
+          <a href="#">Telegram Bot</a>
+        </div>
+        <div class="footer__col">
+          <h5>Legal</h5>
+          <a href="#">Política de Privacidad</a>
+          <a href="#">Términos de Uso</a>
+          <a href="#">Accesibilidad</a>
+          <a href="#contacto">Contacto</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <div class="container">
+        <p>&copy; 2024 SmartCity-Fix. Sistema de Gobierno Digital. Todos los derechos reservados.</p>
+        <p>Desarrollado con <i class="ri-heart-fill"></i> para una ciudad más inteligente.</p>
       </div>
     </div>
   </footer>
 
-  <script src="js/app.js"></script>
+  <!-- Leaflet.js -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/app.js" defer></script>
 </body>
 </html>
