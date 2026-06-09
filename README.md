@@ -6,6 +6,72 @@
 
 ---
 
+## 📸 Capturas de Pantalla
+
+### 🌐 Página Web
+
+**Hero & Landing**
+
+![Hero - SmartCity-Fix](https://i.ibb.co/m55NzhgH/Captura-de-pantalla-2026-06-09-181523.png)
+
+*Vista principal con estadísticas en tiempo real y tarjetas animadas.*
+
+---
+
+**Formulario de Reporte**
+
+![Formulario de reporte ciudadano](https://i.ibb.co/nM5zQSWk/Captura-de-pantalla-2026-06-09-181640.png)
+
+*Formulario avanzado con geolocalización, drag & drop de foto y validaciones en tiempo real.*
+
+---
+
+**Dashboard de Métricas**
+
+![Dashboard de métricas](https://i.ibb.co/XrGcQdxj/Captura-de-pantalla-2026-06-09-181744.png)
+
+*Panel con bar chart, donut chart y line chart en SVG puro mostrando reportes por categoría y estado.*
+
+---
+
+**Consulta de Estado de Ticket**
+
+![Panel de consulta de ticket](https://i.ibb.co/LzHQ0HMF/Captura-de-pantalla-2026-06-09-181827.png)
+
+*Módulo de seguimiento de reportes con ID de ticket y estado actual.*
+
+---
+
+### ⚙️ Flujo n8n
+
+**Flujo completo de procesamiento**
+
+![Flujo n8n - SmartCity-Fix](https://i.ibb.co/1JmNSQ60/Captura-de-pantalla-2026-06-09-181950.png)
+
+*Pipeline completo: Webhook → OpenAI Vision → Google Sheets → Telegram Bot.*
+
+---
+
+**Nodo de clasificación IA**
+
+![Nodo OpenAI Vision en n8n](https://i.ibb.co/Wpx5nwTb/Captura-de-pantalla-2026-06-09-182153.png)
+
+*Configuración del nodo de análisis de imagen con clasificación y priorización automática.*
+
+---
+
+### 📱 Notificaciones Telegram
+
+**Notificación de nuevo reporte**
+
+![Telegram - Reporte recibido](https://i.ibb.co/7t2KTFmL/Captura-de-pantalla-2026-06-09-182230.png)
+
+*Mensaje enviado al ciudadano con el ID de ticket generado y estado inicial.*
+
+---
+
+
+
 ## Estructura del Proyecto
 
 ```
@@ -24,13 +90,13 @@ smartcity-fix/
 
 ## Stack Tecnológico
 
-| Capa        | Tecnología                              |
-|-------------|-----------------------------------------|
-| Markup      | HTML5 semántico + ARIA                  |
-| Estilos     | CSS3 + Custom Properties + Grid/Flexbox |
-| Lógica      | JavaScript ES6+ / TypeScript            |
-| Íconos      | Remix Icons 4.2 (CDN)                   |
-| Tipografía  | Syne (display) + DM Sans (body) — Google Fonts |
+| Capa        | Tecnología                                             |
+|-------------|--------------------------------------------------------|
+| Markup      | HTML5 semántico + ARIA                                 |
+| Estilos     | CSS3 + Custom Properties + Grid/Flexbox                |
+| Lógica      | JavaScript ES6+ / TypeScript                           |
+| Íconos      | Remix Icons 4.2 (CDN)                                  |
+| Tipografía  | Syne (display) + DM Sans (body) — Google Fonts         |
 
 ---
 
@@ -73,6 +139,7 @@ tsc          # compila según tsconfig
 ```
 
 **tsconfig.json recomendado:**
+
 ```json
 {
   "compilerOptions": {
@@ -117,7 +184,6 @@ El formulario está preparado para conectarse a un backend n8n mediante `fetch`:
 ```javascript
 // En app.js — función simulateSubmit()
 // Reemplazar el await sleep(2000) con:
-
 const formData = new FormData(form);
 const response = await fetch('https://tu-n8n.com/webhook/smartcity-fix', {
   method: 'POST',
@@ -127,6 +193,7 @@ const data = await response.json();
 ```
 
 ### Flujo backend esperado:
+
 1. **Webhook n8n** recibe FormData (campos + imagen)
 2. **OpenAI Vision** analiza la imagen → clasifica y prioriza
 3. **Google Sheets** registra el reporte con ID de ticket
