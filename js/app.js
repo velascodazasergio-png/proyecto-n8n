@@ -1,14 +1,11 @@
-/**
- * SmartCity-Fix — app.js
- * Lógica principal del frontend
- * Stack: JavaScript ES6+ (compilado desde app.ts)
- */
+
 
 'use strict';
 
-// ── Reemplaza con la URL del webhook de n8n después de importar el workflow ──
 const N8N_WEBHOOK_URL = 'https://stipulate-glade-exclaim.ngrok-free.dev/webhook/smartcity-fix';
-//                                                                         ^^^^^^^ sin "-test"';
+
+
+const FORCE_FAIL_MODE = true;
 
 /* ============================================================
    1. LOADER
@@ -122,7 +119,6 @@ window.addEventListener('load', () => {
     { threshold: 0.5 }
   );
 
-
   counters.forEach(el => observer.observe(el));
 })();
 
@@ -147,7 +143,6 @@ window.addEventListener('load', () => {
     { threshold: 0.4 }
   );
 
-  
   bars.forEach(el => observer.observe(el));
 })();
 
@@ -155,7 +150,6 @@ window.addEventListener('load', () => {
    6. CHARTS
    ============================================================ */
 (function initCharts() {
-  // ── Bar Chart
   const barChart = document.getElementById('barChart');
   if (barChart) {
     const data = [
@@ -194,7 +188,6 @@ window.addEventListener('load', () => {
     });
   }
 
-  // ── Indicator bars
   const indicatorBars = document.querySelectorAll('.indicator__bar div');
   const indObs = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -209,7 +202,6 @@ window.addEventListener('load', () => {
   }, { threshold: 0.4 });
   indicatorBars.forEach(b => indObs.observe(b));
 
-  // ── Line Chart (SVG)
   const lineChart = document.getElementById('lineChart');
   if (lineChart) {
     const points = [22, 18, 26, 15, 19, 14, 21, 17, 13, 20, 16, 18];
@@ -647,62 +639,77 @@ function validateForm() {
   });
 
   async function simulateSubmit() {
-  const photoFile = document.getElementById('photoInput')?.files?.[0];
-  let photoBase64 = '';
-  if (photoFile) {
-    photoBase64 = await fileToBase64(photoFile);
-  }
-
-  // ── Genera ticketId local por si n8n falla ──
-  const localTicketId = generateTicketId();
-
-  const payload = {
-    ticketId:       localTicketId,
-    fullName:       document.getElementById('fullName')?.value  || '',
-    docId:          document.getElementById('docId')?.value     || '',
-    phone:          document.getElementById('phone')?.value     || '',
-    email:          document.getElementById('email')?.value     || '',
-    incidentType:   document.querySelector('input[name="incidentType"]:checked')?.value || '',
-    lat:            document.getElementById('lat')?.value       || '',
-    lng:            document.getElementById('lng')?.value       || '',
-    direccion:      document.getElementById('geoAddress')?.querySelector('span')?.textContent?.trim() || '',
-    description:    document.getElementById('description')?.value || '',
-    // ── Si no hay foto manda string vacío, nunca null ──
-    photoBase64:    photoBase64 || '',
-    fechaEnvio:     new Date().toISOString(),
-    telegramChatId: '',
-  };
-
-  let ticketId = localTicketId;
-
-  try {
-    const res = await fetch(N8N_WEBHOOK_URL, {
-      method:  'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (res.ok) {
-      const data = await res.json().catch(() => ({}));
-      if (data.ticketId) ticketId = data.ticketId;
-      showToast(`✓ Reporte enviado. Ticket: ${ticketId}`, 'success', 7000);
-    } else if (res.status === 400) {
-      // n8n rechazó por spam o validación
-      const data = await res.json().catch(() => ({}));
-      const msg = data.message || 'Reporte rechazado por el sistema.';
-      showToast(`⚠️ ${msg}`, 'error', 7000);
-      return; // no resetear el form, deja que el usuario corrija
-    } else {
-      throw new Error(`HTTP ${res.status}`);
+    const photoFile = document.getElementById('photoInput')?.files?.[0];
+    let photoBase64 = '';
+    if (photoFile) {
+      photoBase64 = await fileToBase64(photoFile);
     }
-  } catch (err) {
-    console.warn('n8n no disponible, usando modo demo:', err.message);
-    showToast(`✓ Reporte registrado (demo). Ticket: ${ticketId}`, 'success', 6000);
-  }
 
+    const localTicketId = generateTicketId();
+
+    // ══════════════════════════════════════════════════════
+    //  🔴 MODO FALLO: sustituye la imagen real por basura
+    //     para que OpenRouter no pueda clasificar nada
+    //     → activa iaFallo=true en el workflow
+    // ══════════════════════════════════════════════════════
+    const photoParaEnviar = FORCE_FAIL_MODE
+      ? 'data:image/jpeg;base64,/9j/FALLO_TECNICO_PRUEBA_XXXXXXXXXXX=='
+      : photoBase64;
+
+    if (FORCE_FAIL_MODE) {
+      console.warn('[TEST MODE] Enviando imagen corrupta para forzar iaFallo=true');
+    }
+
+    const payload = {
+      ticketId:       localTicketId,
+      fullName:       document.getElementById('fullName')?.value  || '',
+      docId:          document.getElementById('docId')?.value     || '',
+      phone:          document.getElementById('phone')?.value     || '',
+      email:          document.getElementById('email')?.value     || '',
+      incidentType:   document.querySelector('input[name="incidentType"]:checked')?.value || '',
+      lat:            document.getElementById('lat')?.value       || '',
+      lng:            document.getElementById('lng')?.value       || '',
+      direccion:      document.getElementById('geoAddress')?.querySelector('span')?.textContent?.trim() || '',
+      description:    document.getElementById('description')?.value || '',
+      photoBase64:    photoParaEnviar,
+      fechaEnvio:     new Date().toISOString(),
+      telegramChatId: '',
+    };
+
+    let ticketId = localTicketId;
+
+    try {
+      const res = await fetch(N8N_WEBHOOK_URL, {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.ticketId) ticketId = data.ticketId;
+
+        // En modo fallo esperamos la respuesta de contingencia
+        if (FORCE_FAIL_MODE && data.estado === 'PENDIENTE - REVISIÓN MANUAL') {
+          showToast(`✓ [PRUEBA] Fallo técnico capturado. Ticket: ${ticketId} → enviado a revisión manual`, 'info', 8000);
+        } else {
+          showToast(`✓ Reporte enviado. Ticket: ${ticketId}`, 'success', 7000);
+        }
+      } else if (res.status === 400) {
+        const data = await res.json().catch(() => ({}));
+        const msg = data.message || 'Reporte rechazado por el sistema.';
+        showToast(`⚠️ ${msg}`, 'error', 7000);
+        return;
+      } else {
+        throw new Error(`HTTP ${res.status}`);
+      }
+    } catch (err) {
+      console.warn('n8n no disponible:', err.message);
+      showToast(`✓ Reporte registrado (demo). Ticket: ${ticketId}`, 'success', 6000);
+    }
 
     const ticketInput = document.getElementById('ticketId');
     if (ticketInput) ticketInput.value = ticketId;
@@ -753,30 +760,23 @@ function validateForm() {
 
     try {
       const url = `https://stipulate-glade-exclaim.ngrok-free.dev/webhook/get-ticket?id=${encodeURIComponent(id)}`;
-
-      // ── fetch único con ngrok-skip-browser-warning ──
       const res = await fetch(url, {
         method: 'GET',
-        headers: {
-          'ngrok-skip-browser-warning': 'true',
-        },
+        headers: { 'ngrok-skip-browser-warning': 'true' },
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
       const ticket = await res.json();
-
-      if (!ticket || !ticket.ticketId) {
-        throw new Error('Ticket no encontrado');
-      }
+      if (!ticket || !ticket.ticketId) throw new Error('Ticket no encontrado');
 
       const mapaEstados = {
-        'Pendiente':   1,
-        'Análisis IA': 2,
-        'Asignado':    3,
-        'En proceso':  4,
-        'Solucionado': 5,
-        'Duplicado':   5,
+        'Pendiente':             1,
+        'Análisis IA':           2,
+        'Asignado':              3,
+        'En proceso':            4,
+        'Solucionado':           5,
+        'Duplicado':             5,
+        'PENDIENTE - FALLO TÉCNICO': 1,
       };
       const statusNum = mapaEstados[ticket.estado] || 1;
 
@@ -797,12 +797,20 @@ function validateForm() {
           </div>`;
       }).join('');
 
+      // Indicador visual especial si es fallo técnico
+      const falloAlert = ticket.estado === 'PENDIENTE - FALLO TÉCNICO'
+        ? `<p style="color:#F59E0B;font-size:.75rem;margin-top:6px">
+             ⚠️ En revisión manual por el equipo técnico
+           </p>`
+        : '';
+
       resultDiv.innerHTML = `
         <div class="ticket-progress">
           <div class="ticket-info">
             <h4>${ticket.ticketId}</h4>
-            <p>${ticket.categoria.toUpperCase()} · Severidad: ${ticket.prioridad}</p>
+            <p>${(ticket.categoria || 'Sin clasificar').toUpperCase()} · Severidad: ${ticket.prioridad || 'N/A'}</p>
             <p style="font-size:.75rem;color:rgba(255,255,255,.4)">📅 ${ticket.fecha}</p>
+            ${falloAlert}
           </div>
           ${stepsHTML}
         </div>`;
@@ -817,10 +825,7 @@ function validateForm() {
 
   checkBtn.addEventListener('click', () => {
     const id = ticketInput.value.trim();
-    if (!id) {
-      showToast('Ingresa un número de ticket.', 'error');
-      return;
-    }
+    if (!id) { showToast('Ingresa un número de ticket.', 'error'); return; }
     lookup(id);
   });
 
@@ -840,14 +845,10 @@ function validateForm() {
 function showToast(msg, type = 'info', duration = 4000) {
   const toast = document.getElementById('toast');
   if (!toast) return;
-
   toast.textContent = msg;
   toast.className   = `toast toast--${type} show`;
-
   clearTimeout(toast._timeout);
-  toast._timeout = setTimeout(() => {
-    toast.classList.remove('show');
-  }, duration);
+  toast._timeout = setTimeout(() => toast.classList.remove('show'), duration);
 }
 
 /* ============================================================
