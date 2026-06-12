@@ -122,6 +122,7 @@ window.addEventListener('load', () => {
     { threshold: 0.5 }
   );
 
+
   counters.forEach(el => observer.observe(el));
 })();
 
@@ -146,6 +147,7 @@ window.addEventListener('load', () => {
     { threshold: 0.4 }
   );
 
+  
   bars.forEach(el => observer.observe(el));
 })();
 
